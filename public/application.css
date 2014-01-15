@@ -8,5 +8,16 @@ form#stay_form {
 }
 
 img.card_image {
-  margin: 0px 10px 10px 0px;
+  margin: 15px 10px 10px 10px;
 }
+
+#front_page_image {
+ float: right; width: 900px;
+}
+
+.container maxWidth {
+    max-width:980px;
+    margin-right: 50px;
+    margin-left: 50px
+}
+

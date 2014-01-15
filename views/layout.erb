@@ -4,6 +4,8 @@
     <title>My First App</title>
     <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="/application.css">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="/application.js"></script>
   </head>
   <body style="padding-top: 50px;">
 
@@ -20,7 +22,7 @@
       </div>
     </div>
 
-  <div class="container">
+  <div class="container maxWidth">
    </div>
     <%if @error %>
       <div class="alert alert-error"><%=@error%></div>
@@ -30,12 +32,7 @@
     <% end %>
       <%= yield %>
   </div>
-  <style type="text/css">
-   .container{
-    max-width:980px;
-    margin:0 auto;/*make it centered*/
-    }
-   </style>
+
   </body>
 </html>
 

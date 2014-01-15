@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+<div class="container maxWidth">
+<h3>Welcome! How much do you want to bet at this round?</h3>
+<p><strong><%= session[:player_name] %> has <%= session[:player_account].to_i %> coins.</strong></p>
+
+<form action="/bet" method="post">
+  <div class="input-prepend input-apppend">
+  <span class="add-on">$</span>
+  <input type="text" name="bet_amount"/>
+  <input id="appendedbutton" type="submit" class="btn" value="bet"/>
+  </div>
+</form>
+</div>

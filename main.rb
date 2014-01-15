@@ -5,6 +5,8 @@ set :sessions, true
 
 BLACKJACK_AMOUNT = 21
 DEALER_HIT_MIN = 17
+INITIAL_POT_AMOUNT = 300
+
 #Using helpers can make those method available in main.rb and also in the template
 helpers do
   def calculate_total(cards)
@@ -50,19 +52,21 @@ helpers do
    def winner!(msg)
     @show_hit_or_stay_button = false
     @show_play_again_button = true
-    @success = "<strong>#{session[:player_name]} wins!</strong> #{msg}"
+    session[:player_account] = session[:player_account] + session[:player_bet]
+    @winner = "<strong>#{session[:player_name]} wins!</strong> #{msg}"
    end
 
    def loser!(msg)
     @show_hit_or_stay_button = false
     @show_play_again_button = true
-    @error = "<strong> #{session[:player_name]} loses...</strong> #{msg}"
+    session[:player_account] = session[:player_account] -session[:player_bet]
+    @loser = "<strong> #{session[:player_name]} loses...</strong> #{msg}"
    end
 
    def tie!(msg)
     @show_hit_or_stay_button = false
     @show_play_again_button = true
-    @success = "<strong>It's a tie!</strong> #{msg}"
+    @winner = "<strong>It's a tie!</strong> #{msg}"
    end
 end
 
@@ -88,25 +92,27 @@ get '/' do
 end
 
 get '/new_player' do
+ session[:player_account] = INITIAL_POT_AMOUNT
  erb :new_player
 end
 
 get '/game_over' do
   erb :game_over
 end
+
 post '/new_player' do
   if params[:player_name].empty?
     @error ="Please enter your name!"
     #stop the action
     halt erb(:new_player)
   end
-  if params[:player_name].match(/[[:digit:]]/) || params[:player_name].match(/[[:graph:]]/)
+  if !params[:player_name].match(/^[A-z]+$/)
    @error = "Please enter your name with only alphanumeric characters. Thanks!"
    halt erb(:new_player)
   end
   session[:player_name] = params[:player_name]
   #progress to the game
-  redirect '/game'
+  redirect '/bet'
 end
 
 #when to use 'get' and 'post'
@@ -136,16 +142,42 @@ post '/game' do
   redirect '/game'
 end
 
+get '/bet' do
+  session[:player_bet] = nil
+  erb :bet
+end
+
+post '/bet' do
+  if params[:bet_amount].nil? || params[:bet_amount].to_i == 0
+    @error ="You must bet to start the game!"
+    #stop the action
+    halt erb(:bet)
+  elsif !params[:bet_amount].match(/^[0-9]+$/)
+   @error = "Please enter only number. Thanks!"
+   halt erb(:bet)
+  elsif params[:bet_amount].to_i > session[:player_account] #it's already fixnum
+    @error = "You bet way much than what you have. Please bet below #{session[:player_account]} coins!"
+    halt erb(:bet)
+  #elsif params[:bet_amount].to_i = session[:player_account]
+  #  @error = "Are you sure to bet all of your coins?"
+  # hold it to enter "Go!" or "Reset"
+  else
+  session[:player_bet] = params[:bet_amount].to_i
+  end
+  redirect '/game'
+end
+
 post '/game/player/hit' do
    session[:player_cards] << session[:deck].pop
-
    player_total = calculate_total(session[:player_cards])
+
    if player_total == BLACKJACK_AMOUNT
     winner!("#{session[:player_name]} hit blackjack!")
    elsif player_total > BLACKJACK_AMOUNT
-    loser!("#{session[:player_name]} busted!")
+    loser!("#{session[:player_name]} busted at #{player_total}!")
    end
-   erb :game
+
+   erb :game, layout:false
 end
 
 post '/game/player/stay' do
@@ -172,7 +204,7 @@ get '/game/dealer' do
   else
     @dealer_hit_button = true
   end
-   erb :game
+   erb :game, layout:false
 end
 
 post '/game/dealer/hit' do
@@ -194,7 +226,7 @@ get '/game/compare' do
   else
     tie!("Both #{session[:player_name]} and the dealer stayed at #{player_total}.")
   end
-  erb :game
+  erb :game, layout:false
 end
 
 
